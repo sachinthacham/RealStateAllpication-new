@@ -2,8 +2,7 @@
   "name": "api",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "type": "module",
+  "main": "server.ts",
   "scripts": {
     "dev": "nodemon --watch src --exec ts-node src/server.ts",
     "build": "tsc",
@@ -35,11 +34,12 @@
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
-    "@types/node": "^24.5.2",
-    "@types/nodemailer": "^7.0.1",
+    "@types/node": "^24.6.2",
+    "@types/nodemailer": "^7.0.2",
     "@types/winston": "^2.4.4",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.9.3"
   }
 }
