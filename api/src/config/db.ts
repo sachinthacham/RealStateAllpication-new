@@ -1,13 +1,8 @@
 import mongoose from "mongoose";
+import { MONGO_URI } from "./index";
 
-const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/realestate";
-
-export const connectDB = async (): Promise<void> => {
-  try {
-    await mongoose.connect(MONGO_URI);
-    console.log("✅ MongoDB connected");
-  } catch (error) {
-    console.error("❌ MongoDB connection error:", error);
-    process.exit(1); // exit process if DB connection fails
-  }
+export const connectDB = async () => {
+  if (!MONGO_URI) throw new Error("MONGO_URI is required in env");
+  await mongoose.connect(MONGO_URI);
+  console.log("MongoDB connected");
 };
