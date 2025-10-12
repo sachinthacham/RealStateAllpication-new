@@ -37,7 +37,7 @@ export const forgotPassword = async (
   try {
     const { email } = req.body;
     await authService.forgotPassword(email);
-    res.json({ message: "Password reset email sent (if account exists)" });
+    res.json({ message: "Password reset email sent" });
   } catch (err) {
     next(err);
   }
