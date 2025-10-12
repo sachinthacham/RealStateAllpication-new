@@ -1,113 +1,77 @@
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import { OAuth2Client } from "google-auth-library";
+import crypto from "crypto";
+import User from "../models/User.model";
+import { generateToken } from "../utils/generateToken";
+import { sendEmail } from "../utils/sendEmail";
+import { CLIENT_URL } from "../config/index";
 
-import UserModel from "../models/User.model.js";
-import type { IUser } from "../models/User.model.js";
-import type { LoginInput } from "../interfaces/auth.interface.js";
-import {
-  ConflictError,
-  NotFoundError,
-  BadRequestError,
-} from "../utils/errors.js";
-
-const JWT_SECRET = process.env.JWT_SECRET || "supersecretjwtkey";
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1h";
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
-
-export const signup = async (
-  payload: Partial<IUser>
-): Promise<Partial<IUser>> => {
-  const { name, email, password, role } = payload;
-
-  const existing = await UserModel.findOne({ email });
-  if (existing) throw new ConflictError("Email already registered");
-
-  if (!password) throw new BadRequestError("Password is required");
-
-  const hashed = await bcrypt.hash(password, 10);
-  const user = await UserModel.create({ name, email, password: hashed, role });
-
+export const signup = async (name: string, email: string, password: string) => {
+  const existing = await User.findOne({ email });
+  if (existing) throw { status: 400, message: "Email already registered" };
+  const user = await User.create({ name, email, password });
+  const token = generateToken({ id: user._id.toString()});
   return {
-    _id: user._id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    profilePic: user.profilePic,
+    user: { id: user._id, name: user.name, email: user.email},
+    token,
   };
 };
 
-export const signin = async (
-  email: string,
-  password: string
-): Promise<{ token: string }> => {
-  const user = await UserModel.findOne({ email }).select("+password");
-  if (!user) throw new NotFoundError("User not found");
-
-  const valid = await bcrypt.compare(password, user.password || "");
-  if (!valid) throw new BadRequestError("Invalid credentials");
-
-  const token = jwt.sign(
-    { sub: user._id.toString(), role: user.role },
-    JWT_SECRET,
-    { expiresIn: JWT_EXPIRES_IN }
-  );
-  return { token };
+export const signin = async (email: string, password: string) => {
+  const user = await User.findOne({ email });
+  if (!user) throw { status: 400, message: "Invalid credentials" };
+  const isMatch = await user.comparePassword(password);
+  if (!isMatch) throw { status: 400, message: "Invalid credentials" };
+  const token = generateToken({ id: user._id.toString() });
+  return {
+    user: { id: user._id, name: user.name, email: user.email },
+    token,
+  };
 };
 
-export const googleSignIn = async (
-  idToken: string
-): Promise<{ token: string }> => {
-  if (!GOOGLE_CLIENT_ID) throw new Error("GOOGLE_CLIENT_ID not configured");
+export const forgotPassword = async (email: string) => {
+  const user = await User.findOne({ email });
+  if (!user) throw { status: 400, message: "No account with that email" };
 
-  const ticket = await googleClient.verifyIdToken({
-    idToken,
-    audience: GOOGLE_CLIENT_ID,
+  // generate token and save hashed into DB
+  // We send raw to user
+  const resetTokenRaw = crypto.randomBytes(32).toString("hex");
+  const hashed = crypto
+    .createHash("sha256")
+    .update(resetTokenRaw)
+    .digest("hex");
+  user.resetPasswordToken = hashed;
+  user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiry
+  await user.save();
+
+  const resetUrl = `${CLIENT_URL}/reset-password?token=${resetTokenRaw}&id=${user._id}`;
+  const html = `<p>You requested a password reset. Click link to reset password:</p>
+    <a href="${resetUrl}">${resetUrl}</a>
+    <p>If you didn't request, ignore this email.</p>`;
+
+  await sendEmail(user.email, "Password Reset", html);
+  return;
+};
+
+// reset password using the token
+// Token is sent in raw form, we hash and compare to DB
+// Also check expiry
+export const resetPassword = async (
+  userId: string,
+  tokenRaw: string,
+  newPassword: string
+) => {
+  const hashed = crypto.createHash("sha256").update(tokenRaw).digest("hex");
+  const user = await User.findOne({
+    _id: userId,
+    resetPasswordToken: hashed,
+    resetPasswordExpires: { $gt: new Date() },
   });
-  const payload = ticket.getPayload();
-  if (!payload) throw new BadRequestError("Invalid Google token");
+  if (!user) throw { status: 400, message: "Token invalid or expired" };
 
-  const email = payload.email;
-  const name = payload.name || "Google User";
-  const picture = payload.picture;
-  const googleId = payload.sub;
-
-  if (!email) throw new BadRequestError("Google token did not contain email");
-
-  let user = await UserModel.findOne({ email });
-  if (!user) {
-    user = await UserModel.create({
-      name,
-      email,
-      googleId,
-      profilePic: picture,
-      role: "buyer",
-    });
-  } else if (!user.googleId) {
-    // attach google id if user previously signed up with email
-    user.googleId = googleId;
-    if (!user.profilePic && picture) user.profilePic = picture;
-    await user.save();
-  }
-
-  const token = jwt.sign(
-    { sub: user._id.toString(), role: user.role },
-    JWT_SECRET,
-    { expiresIn: JWT_EXPIRES_IN }
-  );
-  return { token };
-};
-
-export const refreshToken = async (
-  userId: string
-): Promise<{ token: string }> => {
-  const user = await UserModel.findById(userId);
-  if (!user) throw new NotFoundError("User not found");
-  const token = jwt.sign(
-    { sub: user._id.toString(), role: user.role },
-    JWT_SECRET,
-    { expiresIn: JWT_EXPIRES_IN }
-  );
-  return { token };
+  user.password = newPassword;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpires = undefined;
+  await user.save();
+  // Optionally return a JWT to auto-login after reset:
+  const token = generateToken({ id: user._id.toString()});
+  return { user: { id: user._id, name: user.name, email: user.email }, token };
 };
