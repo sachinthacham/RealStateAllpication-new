@@ -1,32 +1,44 @@
-import { Schema, model, Document } from "mongoose";
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
+import type { IUser } from "../interfaces/IUser";
 
-export interface IUser extends Document {
-  name: string;
-  email: string;
-  password?: string;
-  role: "buyer" | "seller" | "admin";
-  profilePic?: string;
-  googleId?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const userSchema = new Schema<IUser>(
+const UserSchema = new mongoose.Schema<IUser>(
   {
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, select: false }, // Store hashed password
-    role: {
+    name: { type: String, required: true, trim: true },
+    email: {
       type: String,
-      enum: ["buyer", "seller", "admin"],
-      default: "buyer",
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
     },
-    profilePic: { type: String },
-    googleId: { type: String, unique: true, sparse: true }, // For Google OAuth
+    password: { type: String, required: true },
+    role: { type: String, default: "buyer" },
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
+    wishlist:[{ type: mongoose.Schema.Types.ObjectId, ref: "Property" }],
   },
   { timestamps: true }
 );
 
-const UserModel = model<IUser>("User", userSchema);
+// Hash password before save
+UserSchema.pre<IUser>("save", async function (next) {
+  if (!this.isModified("password")) return next();
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
 
-export default UserModel;
+UserSchema.methods.comparePassword = function (candidatePassword: string) {
+  return bcrypt.compare(candidatePassword, this.password);
+};
+
+// Optional helper to generate a reset token (not saving here)
+UserSchema.statics.generateResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  const hashed = crypto.createHash("sha256").update(resetToken).digest("hex");
+  return { resetToken, hashed };
+};
+
+export default mongoose.model<IUser>("User", UserSchema);
