@@ -1,20 +1,26 @@
 import { Router } from "express";
-import {
-  signup,
-  signin,
-  googleSignIn,
-} from "../controllers/auth.controller.js";
-import { validate } from "../middlewares/validate.middleware.js";
+import * as ctrl from "../controllers/auth.controller";
+import { validate } from "../middlewares/validate";
 import {
   signupSchema,
   signinSchema,
-  googleAuthSchema,
-} from "../validations/auth.schema.js";
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from "../validations/auth.validation";
 
 const router = Router();
 
-router.post("/signup", validate(signupSchema), signup);
-router.post("/login", validate(signinSchema), signin);
-router.post("/google", validate(googleAuthSchema), googleSignIn);
+router.post("/signup", validate(signupSchema), ctrl.signup);
+router.post("/signin", validate(signinSchema), ctrl.signin);
+router.post(
+  "/forgot-password",
+  validate(forgotPasswordSchema),
+  ctrl.forgotPassword
+);
+router.post(
+  "/reset-password",
+  validate(resetPasswordSchema),
+  ctrl.resetPassword
+);
 
 export default router;
