@@ -1,13 +1,72 @@
-import { Document } from "mongoose";
+export interface IAuthTokens {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+}
 
-export interface IUser extends Document {
+export interface IUserResponse {
   _id: string;
+  email: string;
   name: string;
+  role: 'user' | 'agent' | 'admin';
+  phone?: string;
+  profileImage?: string;
+  isActive: boolean;
+  isEmailVerified: boolean;
+  lastLogin?: Date;
+  company?: string;
+  licenseNumber?: string;
+  bio?: string;
+  experience?: number;
+  specialty?: string[];
+  socialMedia?: {
+    facebook?: string;
+    twitter?: string;
+    linkedin?: string;
+    instagram?: string;
+  };
+}
+
+export interface IAuthResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    user?: IUserResponse;
+    tokens?: IAuthTokens;
+  };
+}
+
+export interface ILoginCredentials {
   email: string;
   password: string;
-  role?: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpires?: Date | null;
-  comparePassword(candidatePassword: string): Promise<boolean>;
-  wishlist: string[];
+  rememberMe?: boolean;
+}
+
+export interface IRegisterData {
+  email: string;
+  password: string;
+  name: string;
+  phone?: string;
+  role?: 'user' | 'agent';
+  company?: string;
+  licenseNumber?: string;
+}
+
+export interface IForgotPasswordData { email: string; }
+export interface IResetPasswordData { token: string; password: string; }
+export interface IChangePasswordData { currentPassword: string; newPassword: string; }
+export interface IUpdateProfileData {
+  name?: string;
+  phone?: string;
+  profileImage?: string;
+  company?: string;
+  bio?: string;
+  experience?: number;
+  specialty?: string[];
+  socialMedia?: {
+    facebook?: string;
+    twitter?: string;
+    linkedin?: string;
+    instagram?: string;
+  };
 }
