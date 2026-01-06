@@ -43,13 +43,11 @@ export interface ILoginCredentials {
 }
 
 export interface IRegisterData {
+  name: string;
   email: string;
   password: string;
-  name: string;
-  phone?: string;
-  role?: 'user' | 'agent';
-  company?: string;
-  licenseNumber?: string;
+  confirmPassword: string;
+  agreeToTerms: boolean;
 }
 
 export interface IForgotPasswordData { email: string; }
