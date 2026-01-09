@@ -7,7 +7,9 @@ import {
   updatePropertyValidation,
   propertyQueryValidation,
 } from "../validations/property.validation";
-import upload from '../middlewares/upload.middleware'; // 👈 IMPORT YOUR MULTER CONFIG
+import upload from '../middlewares/upload.middleware'; // IMPORT YOUR MULTER CONFIG
+// Import the review router
+import reviewRouter from './review.routes'; 
 
 const router = Router();
 const propertyController = new PropertyController();
@@ -17,10 +19,7 @@ const propertyController = new PropertyController();
  */
 
 // Important: Specific routes must come BEFORE parameterized routes (/:id)
-router.get(
-  "/nearby/search",
-  propertyController.getNearbyProperties // Arrow functions in controller handle "this"
-);
+router.get('/nearby', propertyController.getNearbyProperties);
 
 router.get(
   "/",
@@ -46,7 +45,7 @@ router.get(
 router.post(
   '/', 
   authenticate,          // 1. Check if user is logged in
-  upload.array('images'), // 2. ✅ CRITICAL: Parse the Multipart Data (Files + Body)
+  upload.array('images'), // 2.  CRITICAL: Parse the Multipart Data (Files + Body)
   //validate(createPropertyValidation), // 3. (Optional) Validate body AFTER Multer parses it
   propertyController.createProperty // 4. Finally, run the controller
 );
@@ -63,5 +62,11 @@ router.delete(
   authenticate,
   propertyController.deleteProperty
 );
+
+//Review routes
+// --- 1. MOUNT REVIEW ROUTER ---
+// This tells Express: "If a route matches /:id/reviews, verify it and hand it over to reviewRouter"
+router.use('/:id/reviews', reviewRouter);
+
 
 export default router;
