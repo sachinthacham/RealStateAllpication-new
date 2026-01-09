@@ -4,7 +4,7 @@ import User, { IUser } from '../models/User.model';
 import { JWT_SECRET, JWT_ACCESS_EXPIRY, JWT_REFRESH_EXPIRY, FRONTEND_URL } from '../config';
 import { ILoginCredentials, IRegisterData, IAuthTokens, IForgotPasswordData, IResetPasswordData, IChangePasswordData } from '../interfaces/IUser';
 import { AppError } from '../utils/appError';
-import { sendEmail } from '../utils/sendEmail';
+import sendEmail  from '../utils/sendEmail';
 import { IUpdateProfileData } from '../interfaces/IUser';
 
 export class AuthService {
@@ -125,20 +125,54 @@ export class AuthService {
   /**
    * Forgot Password - Generate Reset Token
    */
-  async forgotPassword(data: IForgotPasswordData): Promise<void> {
-    const user = await User.findOne({ email: data.email });
-    if (!user) return; // Do not reveal user existence
+  // Note: Ensure FRONTEND_URL is in your .env file
+// Example: FRONTEND_URL=http://localhost:3000
 
-    const resetToken = user.generatePasswordResetToken();
-    await user.save();
+ forgotPassword = async (data: IForgotPasswordData): Promise<void> => {
+  // 1. Find User
+  const user = await User.findOne({ email: data.email });
 
-    const url = `${FRONTEND_URL}/reset-password?token=${resetToken}`;
+  if (!user) {
+    // SECURITY: We return "undefined" (void) instead of throwing an error.
+    // This prevents hackers from guessing which emails are registered.
+    return; 
+  }
+
+  // 2. Generate Token (Updates user object in memory)
+  // This gets the RAW token to email, but saves the HASHED token to the object
+  const resetToken = user.generatePasswordResetToken();
+
+  // 3. Save the User (to write the hash & expiry to DB)
+  // We use validateBeforeSave: false to avoid validation errors on other fields
+  await user.save({ validateBeforeSave: false });
+
+  // 4. Create Reset URL
+  // This is the link the user will click in their email
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+
+  // 5. Send Email
+  try {
+    const message = `
+      <h1>You have requested a password reset</h1>
+      <p>Please go to this link to reset your password:</p>
+      <a href="${resetUrl}" clicktracking=off>${resetUrl}</a>
+      <p>This link expires in 10 minutes.</p>
+    `;
+
     await sendEmail({
       to: user.email,
       subject: 'Password Reset Request',
-      html: `<p>You requested a password reset. Click <a href="${url}">here</a> to reset it. This link expires in 10 minutes.</p>`
+      html: message,
     });
+  } catch (error) {
+    // If email fails, we must reset the token fields so the user can try again
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    throw new Error('Email could not be sent');
   }
+};
 
   /**
    * Reset Password using Token
