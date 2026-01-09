@@ -1,29 +1,34 @@
-import nodemailer from "nodemailer";
-import {
-  SMTP_HOST,
-  SMTP_PORT,
-  SMTP_USER,
-  SMTP_PASS,
-  FROM_EMAIL,
-} from "../config/index";
+import nodemailer from 'nodemailer';
 
-export const sendEmail = async (to: string, subject: string, html: string) => {
+interface EmailOptions {
+  to: string;
+  subject: string;
+  html: string;
+}
+
+const sendEmail = async (options: EmailOptions): Promise<void> => {
+  // 1. Create a Transporter (Connect to your email provider)
+  // For Gmail, you might need an "App Password"
+  // For testing, use Mailtrap.io (highly recommended for dev)
   const transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: SMTP_PORT,
-    secure: false, // SendGrid uses TLS on port 587
+    host: process.env.SMTP_HOST,     // e.g., sandbox.smtp.mailtrap.io
+    port: Number(process.env.SMTP_PORT), // e.g., 2525
     auth: {
-      user: SMTP_USER,
-      pass: SMTP_PASS,
+      user: process.env.SMTP_EMAIL,
+      pass: process.env.SMTP_PASSWORD,
     },
   });
 
-  const info = await transporter.sendMail({
-    from: FROM_EMAIL,
-    to,
-    subject,
-    html,
-  });
+  // 2. Define Email Options
+  const message = {
+    from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
+    to: options.to,
+    subject: options.subject,
+    html: options.html,
+  };
 
-  return info;
+  // 3. Send
+  await transporter.sendMail(message);
 };
+
+export default sendEmail;
