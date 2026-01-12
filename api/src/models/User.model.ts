@@ -76,9 +76,13 @@ UserSchema.methods.comparePassword = async function (candidatePassword: string):
 };
 
 UserSchema.methods.generatePasswordResetToken = function (): string {
+  // A. Generate a random 20-byte buffer and convert to hex string
   const resetToken = crypto.randomBytes(32).toString('hex');
+  // B. Hash the token and save it to the database field (Security best practice)
   this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+  // C. Set expiration to 10 minutes from now
   this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
+  // D. Return the RAW token (to be sent in email)
   return resetToken;
 };
 
