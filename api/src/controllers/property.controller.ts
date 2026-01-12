@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { PropertyService } from '../services/property.service';
 import { AuthRequest } from '../middlewares/auth.middleware';
 import { IPropertyResponse } from '../interfaces/IProperty';
+import Property from '../models/property.model';
 
 
 const propertyService = new PropertyService();
@@ -189,30 +190,43 @@ export class PropertyController {
   /**
    * Geospatial search for nearby properties
    */
-  getNearbyProperties = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const { lng, lat, dist } = req.query;
+  // src/controllers/propertyController.ts
+getNearbyProperties = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { lat, lng, radius = 10 } = req.query; // Radius in Kilometers (default 10km)
 
-      if (!lng || !lat) {
-        res.status(400).json({
-          success: false,
-          message: 'Longitude and latitude are required',
-        });
-        return;
-      }
-
-      const properties = await propertyService.getNearbyProperties(
-        Number(lng),
-        Number(lat),
-        dist ? Number(dist) : 10000 // Default 10km
-      );
-
-      res.status(200).json({
-        success: true,
-        data: properties,
+    // 1. Validation: Coordinates are required
+    if (!lat || !lng) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Please provide latitude and longitude (e.g. ?lat=6.9&lng=79.8)' 
       });
-    } catch (error) {
-      next(error);
     }
-  };
-}
+
+    // 2. Convert Kilometers to Meters (MongoDB uses meters for maxDistance)
+    const radiusInMeters = Number(radius) * 1000;
+
+    // 3. The Geospatial Query
+    const properties = await Property.find({
+      location: {
+        $near: {
+          $geometry: {
+            type: 'Point',
+            // MongoDB expects [Longitude, Latitude] order!
+            coordinates: [Number(lng), Number(lat)] 
+          },
+          $maxDistance: radiusInMeters
+        }
+      }
+    }).limit(1); // Limit results to avoid overloading
+
+    res.status(200).json({
+      success: true,
+      count: properties.length,
+      data: properties
+    });
+
+  } catch (error) {
+    next(error);
+  }
+}}
