@@ -19,6 +19,8 @@ interface AuthState {
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   clearError: () => void;
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (token: string, newPassword: string) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -110,6 +112,38 @@ export const useAuthStore = create<AuthState>()(
           set({ error: error.message, isLoading: false });
         }
       },
+
+      forgotPassword: async (email: string) => {
+        set({ isLoading: true, error: null });
+        try {
+          // Calls the API to send the reset link
+          await authAPI.forgotPassword(email);
+          set({ isLoading: false });
+          // Note: We don't usually set 'user' here, as they aren't logged in yet
+        } catch (error: any) {
+          set({
+            error: error.message || "Failed to send reset email",
+            isLoading: false,
+          });
+          throw error;
+        }
+      },
+
+      resetPassword: async (token: string, newPassword: string) => {
+        set({ isLoading: true, error: null });
+        try {
+          // Calls the API to finalize the password change
+          await authAPI.resetPassword(token, newPassword);
+          set({ isLoading: false });
+        } catch (error: any) {
+          set({
+            error: error.message || "Failed to reset password",
+            isLoading: false,
+          });
+          throw error;
+        }
+      },
+
 
       clearError: () => set({ error: null }),
     }),
