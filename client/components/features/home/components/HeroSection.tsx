@@ -5,11 +5,11 @@ import HomeSearchBar from './HomeSearchBar'; // Import your existing search bar
 
 export default function HeroSection() {
   return (
-    <section className="relative h-[600px] flex flex-col items-center justify-center text-center px-4">
+    <section className="relative h-150 flex flex-col items-center justify-center text-center px-4">
       {/* Background Image with Overlay */}
       <div 
         className="absolute inset-0 bg-cover bg-center z-0" 
-        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1600596542815-2495db9dc2c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')" }}
+        style={{ backgroundImage:"url('/images/heroimage.jpg')" }}
       >
         <div className="absolute inset-0 bg-black/50" /> {/* Dark overlay for readability */}
       </div>
