@@ -1,42 +1,35 @@
-import type { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { UnauthorizedError, ForbiddenError } from "../utils/errors.js";
-
-const JWT_SECRET = process.env.JWT_SECRET || "change_this";
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../config';
+import User from '../models/User.model';
 
 export interface AuthRequest extends Request {
-  user?: { id: string; role: string };
+  user?: any;
 }
 
-export const authenticate = (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-) => {
+export const authenticate = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      throw new UnauthorizedError("No token provided");
-    }
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ success: false, message: 'No token' });
 
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, JWT_SECRET) as {
-      sub: string;
-      role: string;
-    };
-    req.user = { id: decoded.sub, role: decoded.role };
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    if (decoded.type !== 'access') return res.status(401).json({ success: false, message: 'Invalid token type' });
+
+    const user = await User.findById(decoded.id).select('-password');
+    if (!user || !user.isActive) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+    req.user = user;
     next();
-  } catch (err) {
-    next(new UnauthorizedError("Invalid token"));
+  } catch (error) {
+    res.status(401).json({ success: false, message: 'Invalid token' });
   }
 };
 
-// Role-based authorization
-export const authorize =
-  (...roles: string[]) =>
-  (req: AuthRequest, res: Response, next: NextFunction) => {
-    if (!req.user) return next(new UnauthorizedError("Not authenticated"));
-    if (!roles.includes(req.user.role))
-      return next(new ForbiddenError("Access denied"));
+export const authorize = (...roles: string[]) => {
+  return (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
     next();
   };
+};
