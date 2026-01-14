@@ -165,12 +165,13 @@ export class AuthService {
       html: message,
     });
   } catch (error) {
-    // If email fails, we must reset the token fields so the user can try again
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
-    await user.save({ validateBeforeSave: false });
 
-    throw new Error('Email could not be sent');
+   user.passwordResetToken = undefined;
+   user.passwordResetExpires = undefined;
+
+   await user.save({ validateBeforeSave: false });
+
+   throw new Error('Email could not be sent');
   }
 };
 
