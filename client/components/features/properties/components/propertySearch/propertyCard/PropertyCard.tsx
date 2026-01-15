@@ -16,7 +16,7 @@ export default function PropertyCard({
   isFavorite = false,
   onToggleFavorite,
 }: PropertyCardProps) {
-  // ✅ THE ROBUST IMAGE HELPER
+  //  THE ROBUST IMAGE HELPER
   const getImageUrl = (images?: string[]) => {
     // 1. Handle No Images -> Return Placeholder
     if (!images || images.length === 0 || !images[0]) {
