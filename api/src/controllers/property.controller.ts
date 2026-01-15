@@ -34,9 +34,9 @@ export class PropertyController {
       const files = (req.files as Express.Multer.File[]) || [];
       const imageUrls = files.map(file => file.path); 
 
-      // 3. ✅ FIX: Manually convert Numbers
+      // 3.  FIX: Manually convert Numbers
       const propertyData = {
-        ...req.body, // Spread first to get strings like title, description...
+        ...req.body, 
         
         // OVERWRITE the number fields by converting them
         price: Number(req.body.price),
