@@ -3,7 +3,8 @@ import { Inter } from 'next/font/google';
 //import { SessionProvider } from 'next-auth/react';
 //import { AuthProvider } from '@/lib/auth-context';
 import './globals.css';
-import Navbar from '@/components/Navbar';
+import Navbar from '@/components/layouts/header/Navbar';
+import { ProtectedRoute } from '@/components/features/auth/components/ProtectedRoute';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,7 +23,10 @@ export default function RootLayout({
       <body className={inter.className}>
         
             <Navbar />
+           
             <main>{children}</main>
+          
+            
           
       </body>
     </html>
