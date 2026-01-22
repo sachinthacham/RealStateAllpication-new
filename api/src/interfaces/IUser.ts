@@ -25,6 +25,7 @@ export interface IUserResponse {
     linkedin?: string;
     instagram?: string;
   };
+ 
 }
 
 export interface IAuthResponse {
