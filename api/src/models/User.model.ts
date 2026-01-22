@@ -30,6 +30,15 @@ export interface IUser extends Document {
     linkedin?: string;
     instagram?: string;
   };
+  favorites: mongoose.Types.ObjectId[];
+  savedProperties: mongoose.Types.ObjectId[];
+  subscription: {
+    plan: 'REGULAR' | 'BUSINESS' | 'PREMIUM';
+    startDate: Date;
+    endDate: Date; // Null if lifetime/free, or set date
+    status: 'active' | 'expired' | 'canceled';
+    paymentId?: string; // To store Stripe reference
+  };
   comparePassword(candidatePassword: string): Promise<boolean>;
   generatePasswordResetToken(): string;
   generateEmailVerificationToken(): string;
@@ -61,6 +70,24 @@ const UserSchema: Schema = new Schema(
     experience: { type: Number, default: 0 },
     specialty: { type: [String], enum: ['residential', 'commercial', 'luxury', 'rental', 'investment'] },
     socialMedia: { facebook: String, twitter: String, linkedin: String, instagram: String },
+    favorites: [{ type: Schema.Types.ObjectId, ref: 'Property',default: [] }], // Reference the Property model
+    savedProperties: [{ type: Schema.Types.ObjectId, ref: 'Property', default: []}],
+    subscription: {
+      plan: { 
+        type: String, 
+        enum: ['REGULAR', 'BUSINESS', 'PREMIUM'], 
+        default: 'REGULAR' 
+      },
+      startDate: { type: Date, default: Date.now },
+      endDate: { type: Date }, 
+      status: { 
+        type: String, 
+        enum: ['active', 'expired', 'canceled'], 
+        default: 'active' 
+      },
+      paymentId: String
+    }
+    
   },
   { timestamps: true }
 );
