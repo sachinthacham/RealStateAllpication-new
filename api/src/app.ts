@@ -5,6 +5,9 @@ import morgan from 'morgan';
 import mongoose from 'mongoose';
 import authRoutes from './routes/auth.routes';
 import propertyRoutes from './routes/property.routes';
+import favouriteRoutes from './routes/Favourites.routes';
+import savedproperties from './routes/saved.routes';
+import paymentroutes from './routes/payment.routes';
 import { errorHandler } from './middlewares/errorHandler.middleware';
 import { PORT, MONGO_URI, NODE_ENV, FRONTEND_URL } from './config';
 import logger from './utils/logger';
@@ -51,6 +54,8 @@ app.use(morgan(morganFormat, {
   stream: { write: (message) => logger.info(message.trim()) } 
 }));
 
+app.use('/api/payment/webhook', express.raw({ type: 'application/json' }), paymentroutes);
+
 // Body Parsers
 app.use(express.json({ limit: '10kb' })); // Limit body size for security
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
@@ -72,6 +77,9 @@ app.get('/health', (req: Request, res: Response) => {
  */
 app.use('/api/auth', authRoutes);
 app.use('/api/properties', propertyRoutes);
+app.use('/api/users', favouriteRoutes);
+app.use('/api/saved', savedproperties );
+
 /**
  * upload files
  */
