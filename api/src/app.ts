@@ -7,7 +7,7 @@ import authRoutes from './routes/auth.routes';
 import propertyRoutes from './routes/property.routes';
 import favouriteRoutes from './routes/Favourites.routes';
 import savedproperties from './routes/saved.routes';
-import paymentroutes from './routes/payment.routes';
+import paymentroutes from './routes/payment.routes'; 
 import { errorHandler } from './middlewares/errorHandler.middleware';
 import { PORT, MONGO_URI, NODE_ENV, FRONTEND_URL } from './config';
 import logger from './utils/logger';
@@ -17,30 +17,20 @@ const app = express();
 
 /**
  * DATABASE CONNECTION
- * Industry standard: Connect before starting the server to ensure 
- * the app doesn't accept requests without a working DB.
  */
-mongoose.set('strictQuery', true); // Prepare for Mongoose 7/8
+mongoose.set('strictQuery', true);
 mongoose.connect(MONGO_URI)
-  .then(() => {
-    logger.info('Successfully connected to MongoDB.');
-  })
+  .then(() => logger.info('Successfully connected to MongoDB.'))
   .catch((error) => {
     logger.error('MongoDB connection error:', error);
-    process.exit(1); // Exit if DB connection fails
+    process.exit(1);
   });
 
 /**
  * MIDDLEWARES
  */
-// Security Headers
-app.use(
-  helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" },
-  })
-);
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 
-// CORS configuration
 app.use(cors({
   origin: FRONTEND_URL,
   credentials: true,
@@ -48,69 +38,54 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Request Logging (Morgan + Winston)
 const morganFormat = NODE_ENV === 'production' ? 'combined' : 'dev';
 app.use(morgan(morganFormat, { 
   stream: { write: (message) => logger.info(message.trim()) } 
 }));
 
-app.use('/api/payment/webhook', express.raw({ type: 'application/json' }), paymentroutes);
+// We must skip JSON parsing for the webhook route so the raw stream 
+// is available for signature verification later in the router.
+app.use((req, res, next) => {
+  if (req.originalUrl === '/api/payment/webhook') {
+    next(); // Skip JSON parsing for this specific route
+  } else {
+    express.json({ limit: '10kb' })(req, res, next); // Parse JSON for everything else
+  }
+});
 
-// Body Parsers
-app.use(express.json({ limit: '10kb' })); // Limit body size for security
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
-/**
- * HEALTH CHECK
- */
-app.get('/health', (req: Request, res: Response) => {
-  res.status(200).json({
-    status: 'success',
-    message: 'Server is healthy',
-    timestamp: new Date().toISOString(),
-    env: NODE_ENV
-  });
-});
 
 /**
  * API ROUTES
  */
+app.get('/health', (req: Request, res: Response) => {
+  res.status(200).json({ status: 'success', message: 'Server is healthy' });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/properties', propertyRoutes);
 app.use('/api/users', favouriteRoutes);
-app.use('/api/saved', savedproperties );
+app.use('/api/saved', savedproperties);
+app.use('/api/payment', paymentroutes);// The router file itself handles the /webhook and /create-checkout-session sub-paths.
+ 
 
-/**
- * upload files
- */
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-/**
- * 404 HANDLER
- */
+
+// 404 Handler
 app.all(/(.*)/, (req: Request, res: Response) => {
-  res.status(404).json({
-    success: false,
-    message: `Can't find ${req.originalUrl} on this server!`
-  });
+  res.status(404).json({ success: false, message: `Can't find ${req.originalUrl} on this server!` });
 });
 
-/**
- * GLOBAL ERROR HANDLER
- * Catches all next(error) calls from controllers
- */
+// Global Error Handler
 app.use(errorHandler);
 
-/**
- * SERVER STARTUP
- */
+// Server Startup
 const server = app.listen(PORT, () => {
   logger.info(`🚀 Server running on port ${PORT} in ${NODE_ENV} mode`);
 });
 
-/**
- * GRACEFUL SHUTDOWN
- * Industry standard: Close connections properly when the process is killed
- */
+// Graceful Shutdown
 process.on('SIGTERM', () => {
   logger.info('SIGTERM received. Shutting down gracefully...');
   server.close(() => {
