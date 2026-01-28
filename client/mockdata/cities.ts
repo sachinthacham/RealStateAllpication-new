@@ -1,0 +1,15 @@
+export const cities = [
+    { label: 'All Cities', value: 'all' },
+    { label: 'Colombo', value: 'Colombo' },
+    { label: 'Kandy', value: 'Kandy' },
+    { label: 'Galle', value: 'Galle' },
+    { label: 'Jaffna', value: 'Jaffna' },
+    { label: 'Negombo', value: 'Negombo' },
+    { label: 'Matara', value: 'Matara' },
+    { label: 'Kurunegala', value: 'Kurunegala' },
+    { label: 'Anuradhapura', value: 'Anuradhapura' },
+    { label: 'Trincomalee', value: 'Trincomalee' },
+    { label: 'Batticaloa', value: 'Batticaloa' },
+    { label: 'Ratnapura', value: 'Ratnapura' },
+    { label: 'Badulla', value: 'Badulla' },
+  ];
