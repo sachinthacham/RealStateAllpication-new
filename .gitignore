@@ -1,0 +1,32 @@
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs and temp
+*.log
+*.tmp
+*.temp
+
+# API artifacts
+api/node_modules/
+api/dist/
+api/build/
+api/coverage/
+api/logs/
+api/uploads/*
+!api/uploads/.gitkeep
+
+# Client artifacts
+client/node_modules/
+client/.next/
+client/out/
+client/build/
+client/coverage/
+client/.turbo/
