@@ -4,7 +4,7 @@ import { Inter } from 'next/font/google';
 //import { AuthProvider } from '@/lib/auth-context';
 import './globals.css';
 import Navbar from '@/components/layouts/header/Navbar';
-import { ProtectedRoute } from '@/components/features/auth/components/ProtectedRoute';
+import Footer from '@/components/layouts/footer/Footer';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -21,13 +21,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        
-            <Navbar />
-           
-            <main>{children}</main>
-          
-            
-          
+        <div className="app-shell flex min-h-screen flex-col">
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </div>
       </body>
     </html>
   );
