@@ -1,1 +1,21 @@
 .env
+.env.*
+!.env.example
+
+/node_modules
+/dist
+/build
+/coverage
+/logs
+/tmp
+
+# Ignore uploaded files but keep directory tracked when needed
+/uploads/*
+!/uploads/.gitkeep
+
+# Debug and cache files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+*.tsbuildinfo
