@@ -13,7 +13,7 @@ export const propertyApi = {
   
 
   getByAgentId: async (id: string) => {
-    return apiClient.get<Property>(`/properties/agent/${id}`);
+    return apiClient.get<Property[]>(`/properties/agent/${id}`);
   },
 
   create: async (data: FormData) => {
@@ -25,10 +25,18 @@ export const propertyApi = {
   },
 
   update: async (id: string, data: Partial<Property>) => {
-    return apiClient.patch<Property>(`/properties/${id}`, data);
+    return apiClient.put<Property>(`/properties/${id}`, data);
   },
 
   delete: async (id: string) => {
     return apiClient.delete(`/properties/${id}`);
+  },
+
+  getFavorites: async () => {
+    return apiClient.get<Property[]>("/users/favorites");
+  },
+
+  toggleFavorite: async (propertyId: string) => {
+    return apiClient.post<{ isFavorite: boolean; favorites: string[] }>(`/users/favorites/${propertyId}`);
   },
 };
