@@ -8,7 +8,7 @@ export const SUBSCRIPTION_PLANS = {
     },
     BUSINESS: {
       name: 'Business',
-      price: 5000, // LKR
+      price: 5000, 
       maxListings: 10,
       featuredListings: 3,
       supportPriority: 'medium',
