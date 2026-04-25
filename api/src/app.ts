@@ -8,6 +8,12 @@ import propertyRoutes from './routes/property.routes';
 import favouriteRoutes from './routes/Favourites.routes';
 import savedproperties from './routes/saved.routes';
 import paymentroutes from './routes/payment.routes'; 
+import inquiryRoutes from './routes/inquiry.routes';
+import visitRoutes from './routes/visit.routes';
+import savedSearchRoutes from './routes/savedSearch.routes';
+import adminRoutes from './routes/admin.routes';
+import communicationRoutes from './routes/communication.routes';
+import advancedRoutes from './routes/advanced.routes';
 import { errorHandler } from './middlewares/errorHandler.middleware';
 import { PORT, MONGO_URI, NODE_ENV, FRONTEND_URL } from './config';
 import logger from './utils/logger';
@@ -68,6 +74,12 @@ app.use('/api/properties', propertyRoutes);
 app.use('/api/users', favouriteRoutes);
 app.use('/api/saved', savedproperties);
 app.use('/api/payment', paymentroutes);// The router file itself handles the /webhook and /create-checkout-session sub-paths.
+app.use('/api/inquiries', inquiryRoutes);
+app.use('/api/visits', visitRoutes);
+app.use('/api/saved-searches', savedSearchRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/communications', communicationRoutes);
+app.use('/api/advanced', advancedRoutes);
  
 
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
