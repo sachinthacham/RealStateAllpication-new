@@ -1,20 +1,19 @@
-import { Request, Response, NextFunction } from 'express';
-import { AuthService } from '../services/auth.service';
-import { AuthRequest } from '../middlewares/auth.middleware';
-import { toUserResponse } from '../interfaces/Mappers/UserMapper';
+import { Request, Response, NextFunction } from "express";
+import { AuthService } from "../services/auth.service";
+import { AuthRequest } from "../middlewares/auth.middleware";
+import { toUserResponse } from "../interfaces/Mappers/UserMapper";
 
 const authService = new AuthService();
 
 export class AuthController {
-  /**
-   * Register a new user
-   */
+  //Register a new user
+
   register = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { user, tokens } = await authService.register(req.body);
       res.status(201).json({
         success: true,
-        message: 'Registration successful. Please verify your email.',
+        message: "Registration successful. Please verify your email.",
         data: {
           user: toUserResponse(user),
           tokens,
@@ -33,7 +32,7 @@ export class AuthController {
       const { user, tokens } = await authService.login(req.body);
       res.status(200).json({
         success: true,
-        message: 'Login successful',
+        message: "Login successful",
         data: {
           user: toUserResponse(user),
           tokens,
@@ -77,12 +76,16 @@ export class AuthController {
   /**
    * Update User Profile
    */
-  updateProfile = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  updateProfile = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       const user = await authService.updateProfile(req.user!._id, req.body);
       res.status(200).json({
         success: true,
-        message: 'Profile updated successfully',
+        message: "Profile updated successfully",
         data: { user: toUserResponse(user) },
       });
     } catch (error) {
@@ -91,14 +94,14 @@ export class AuthController {
   };
 
   /**
-   * Verify Email Address
+    Verify Email Address
    */
   verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
     try {
       await authService.verifyEmail(req.body.token);
       res.status(200).json({
         success: true,
-        message: 'Email verified successfully',
+        message: "Email verified successfully",
       });
     } catch (error) {
       next(error);
@@ -108,12 +111,16 @@ export class AuthController {
   /**
    * Resend Verification Email
    */
-  resendVerification = async (req: Request, res: Response, next: NextFunction) => {
+  resendVerification = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       await authService.resendVerification(req.body.email);
       res.status(200).json({
         success: true,
-        message: 'Verification email sent if account exists',
+        message: "Verification email sent if account exists",
       });
     } catch (error) {
       next(error);
@@ -128,7 +135,7 @@ export class AuthController {
       await authService.forgotPassword(req.body);
       res.status(200).json({
         success: true,
-        message: 'Password reset link sent if account exists',
+        message: "Password reset link sent if account exists",
       });
     } catch (error) {
       next(error);
@@ -143,7 +150,7 @@ export class AuthController {
       await authService.resetPassword(req.body);
       res.status(200).json({
         success: true,
-        message: 'Password has been reset successfully',
+        message: "Password has been reset successfully",
       });
     } catch (error) {
       next(error);
@@ -153,12 +160,16 @@ export class AuthController {
   /**
    * Change Password (Authenticated)
    */
-  changePassword = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  changePassword = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       await authService.changePassword(req.user!._id, req.body);
       res.status(200).json({
         success: true,
-        message: 'Password changed successfully',
+        message: "Password changed successfully",
       });
     } catch (error) {
       next(error);
@@ -173,7 +184,7 @@ export class AuthController {
       await authService.logout(req.user!._id);
       res.status(200).json({
         success: true,
-        message: 'Logged out successfully',
+        message: "Logged out successfully",
       });
     } catch (error) {
       next(error);
