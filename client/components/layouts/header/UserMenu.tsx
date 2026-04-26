@@ -58,7 +58,7 @@ export function UserMenu() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={user.image} alt={user.name} />
+            <AvatarImage src={user.profileImage} alt={user.name} />
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
         </Button>
@@ -72,32 +72,32 @@ export function UserMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/dashboard" className="cursor-pointer">
+          <Link href="/user/main" className="cursor-pointer">
             <Home className="mr-2 h-4 w-4" />
             Dashboard
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/profile" className="cursor-pointer">
+          <Link href="/user/profile" className="cursor-pointer">
             <User className="mr-2 h-4 w-4" />
             Profile
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/saved" className="cursor-pointer">
+          <Link href="/user/favourites" className="cursor-pointer">
             <Heart className="mr-2 h-4 w-4" />
             Saved Properties
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/messages" className="cursor-pointer">
+          <Link href="/user/messages" className="cursor-pointer">
             <MessageSquare className="mr-2 h-4 w-4" />
             Messages
           </Link>
         </DropdownMenuItem>
         {user.role === 'agent' && (
           <DropdownMenuItem asChild>
-            <Link href="/dashboard/agent" className="cursor-pointer">
+            <Link href="/agent/leads" className="cursor-pointer">
               <Settings className="mr-2 h-4 w-4" />
               Agent Dashboard
             </Link>
@@ -105,7 +105,7 @@ export function UserMenu() {
         )}
         {user.role === 'admin' && (
           <DropdownMenuItem asChild>
-            <Link href="/dashboard/admin" className="cursor-pointer">
+            <Link href="/admin/listings" className="cursor-pointer">
               <Settings className="mr-2 h-4 w-4" />
               Admin Dashboard
             </Link>

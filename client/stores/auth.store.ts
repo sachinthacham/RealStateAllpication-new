@@ -14,8 +14,8 @@ interface AuthState {
   error: string | null;
 
   // Simplified Actions
-  login: (data: LoginFormData) => Promise<void>;
-  register: (data: RegisterFormData) => Promise<void>;
+  login: (data: LoginFormData) => Promise<AuthUser>;
+  register: (data: RegisterFormData) => Promise<AuthUser | null>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   clearError: () => void;
@@ -42,8 +42,10 @@ export const useAuthStore = create<AuthState>()(
           // 2. Save BOTH tokens
           localStorage.setItem("accessToken", accessToken);
           localStorage.setItem("refreshToken", refreshToken);
+          document.cookie = `token=${accessToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax`;
 
           set({ user, isAuthenticated: true, isLoading: false });
+          return user;
         } catch (error: any) {
           set({
             error: error.message || "Login failed",
@@ -66,10 +68,13 @@ export const useAuthStore = create<AuthState>()(
           if (accessToken && refreshToken) {
             localStorage.setItem("accessToken", accessToken);
             localStorage.setItem("refreshToken", refreshToken);
+            document.cookie = `token=${accessToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax`;
             set({ user, isAuthenticated: true, isLoading: false });
+            return user;
           } else {
             // If register doesn't return tokens (requires email verify first)
             set({ isLoading: false }); 
+            return null;
           }
         } catch (error: any) {
           set({
@@ -101,6 +106,7 @@ export const useAuthStore = create<AuthState>()(
           // 3. Remove BOTH tokens
           localStorage.removeItem("accessToken");
           localStorage.removeItem("refreshToken");
+          document.cookie = "token=; path=/; max-age=0";
           
           set({
             user: null,
