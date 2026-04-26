@@ -8,13 +8,15 @@ export default function StatsSection() {
   ];
 
   return (
-    <div className="bg-white py-10 border-b">
-      <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+    <div className="py-10">
+      <div className="section-container grid grid-cols-1 md:grid-cols-3 gap-5 text-center">
         {stats.map((stat, index) => (
-          <div key={index} className="flex flex-col items-center p-4">
-            <stat.icon className="w-8 h-8 text-blue-600 mb-2" />
-            <h3 className="text-3xl font-bold text-gray-900">{stat.value}</h3>
-            <p className="text-gray-500">{stat.label}</p>
+          <div key={index} className="surface-card subtle-ring flex flex-col items-center p-6">
+            <div className="mb-3 rounded-xl bg-blue-50 p-3">
+              <stat.icon className="w-7 h-7 text-blue-600" />
+            </div>
+            <h3 className="text-3xl font-semibold text-slate-900">{stat.value}</h3>
+            <p className="text-slate-500 mt-1">{stat.label}</p>
           </div>
         ))}
       </div>
