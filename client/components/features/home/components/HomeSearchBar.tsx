@@ -33,11 +33,11 @@ export default function HomeSearchBar() {
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-lg max-w-4xl mx-auto">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div className="surface-card subtle-ring p-4 md:p-5 max-w-5xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4">
         {/* Type Selector */}
         <Select value={type} onValueChange={setType}>
-          <SelectTrigger>
+          <SelectTrigger className="h-11 bg-white">
             <SelectValue placeholder="Type" />
           </SelectTrigger>
           <SelectContent>
@@ -48,10 +48,10 @@ export default function HomeSearchBar() {
 
         {/* Location Input */}
         <div className="relative">
-          <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <MapPin className="absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
           <Input
             placeholder="City (e.g. Colombo)"
-            className="pl-9"
+            className="pl-9 h-11 bg-white"
             value={city}
             onChange={(e) => setCity(e.target.value)}
           />
@@ -62,12 +62,14 @@ export default function HomeSearchBar() {
           <Input
             placeholder="Min Price"
             type="number"
+            className="h-11 bg-white"
             value={minPrice}
             onChange={(e) => setMinPrice(e.target.value)}
           />
           <Input
             placeholder="Max Price"
             type="number"
+            className="h-11 bg-white"
             value={maxPrice}
             onChange={(e) => setMaxPrice(e.target.value)}
           />
@@ -76,7 +78,7 @@ export default function HomeSearchBar() {
         {/* Search Button */}
         <Button
           onClick={handleSearch}
-          className="w-full md:w-auto bg-primary hover:bg-primary/90"
+          className="h-11 w-full md:w-auto bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-md hover:from-blue-700 hover:to-indigo-700"
         >
           <Search className="mr-2 h-4 w-4" /> Search
         </Button>
