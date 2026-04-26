@@ -9,7 +9,6 @@ import {
   loginSchema,
   registerSchema,
 } from "@/components/features/auth/schemas/auth";
-import { refresh } from "next/cache";
 
 // Define the shape of your Backend Response
 interface BackendAuthResponse {
@@ -94,10 +93,14 @@ export const authAPI = {
   },
 
   refreshToken: async () => {
-    const response = await apiClient.post<BackendAuthResponse>("/auth/refresh");
+    const refreshToken = typeof window !== "undefined" ? localStorage.getItem("refreshToken") : null;
+    const response = await apiClient.post<{ success: boolean; data: { accessToken: string; refreshToken: string } }>(
+      "/auth/refresh-token",
+      { refreshToken }
+    );
     // Return just the new token string for the interceptor
     return {
-      token: response.data.data.tokens.accessToken,
+      token: response.data.data.accessToken,
     };
   },
 };
