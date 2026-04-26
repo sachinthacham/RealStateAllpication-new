@@ -6,7 +6,7 @@ const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/web
 export const propertySchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
-  type: z.enum(['house', 'apartment']),
+  type: z.enum(['house', 'apartment', 'condo', 'land', 'commercial']),
   status: z.enum(['for_sale', 'for_rent', 'sold', 'rented']),
   price: z.number().min(1, "Price is required"),
   bedrooms: z.number().min(0),
@@ -28,6 +28,8 @@ export const propertySchema = z.object({
   longitude: z.number().min(-180).max(180),
 
   amenities: z.array(z.string()),
+  whatsappNumber: z.string().optional(),
+  emailContact: z.string().email().optional().or(z.literal("")),
 
   // File Validation
   // React Hook Form returns a FileList, not a single File

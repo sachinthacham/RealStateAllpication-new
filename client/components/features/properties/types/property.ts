@@ -2,7 +2,7 @@ export interface Property {
   _id: string;
   title: string;
   description: string;
-  type: 'house' | 'apartment';
+  type: 'house' | 'apartment' | 'condo' | 'land' | 'commercial';
   status: 'for_sale' | 'for_rent' | 'sold' | 'rented';
   price: number;
   bedrooms: number;
@@ -22,8 +22,22 @@ export interface Property {
   };
   amenities: string[];
   images: string[];
-  agent: string; // Populated or ID
+  agent:
+    | string
+    | {
+        _id: string;
+        name: string;
+        email: string;
+        phone?: string;
+        profileImage?: string;
+      };
   createdBy: any;
+  averageRating?: number;
+  numReviews?: number;
+  moderationStatus?: 'pending' | 'approved' | 'rejected';
+  moderationNotes?: string;
+  whatsappNumber?: string;
+  emailContact?: string;
   createdAt: Date;
   updatedAt: Date;
 }
