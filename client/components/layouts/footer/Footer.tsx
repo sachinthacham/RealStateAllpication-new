@@ -1,16 +1,17 @@
 import { Home, Phone, Mail, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import Link from 'next/link';
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-white mt-16">
-      <div className="container mx-auto px-4 py-12">
+    <footer className="mt-16 border-t border-slate-200 bg-slate-950 text-white">
+      <div className="section-container py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           
           {/* Company Info */}
           <div>
             <div className="flex items-center space-x-2 mb-6">
               <Home size={28} className="text-blue-400" />
-              <span className="text-2xl font-bold">RealEstate</span>
+              <span className="text-2xl font-bold">RealEstate Pro</span>
             </div>
             <p className="text-gray-400 mb-6">
               Your trusted partner in finding the perfect home in Sri Lanka since 2010.
@@ -36,29 +37,29 @@ export default function Footer() {
             <h3 className="text-xl font-bold mb-6">Quick Links</h3>
             <ul className="space-y-3">
               <li>
-                <a href="/" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/" className="text-gray-400 hover:text-white transition-colors">
                   Home
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/about" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/about" className="text-gray-400 hover:text-white transition-colors">
                   About Us
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/properties" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/search" className="text-gray-400 hover:text-white transition-colors">
                   Properties
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/agents" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/agent" className="text-gray-400 hover:text-white transition-colors">
                   Agents
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/contact" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/contact" className="text-gray-400 hover:text-white transition-colors">
                   Contact
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -68,29 +69,29 @@ export default function Footer() {
             <h3 className="text-xl font-bold mb-6">Property Types</h3>
             <ul className="space-y-3">
               <li>
-                <a href="/properties/houses" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/search?type=house" className="text-gray-400 hover:text-white transition-colors">
                   Houses
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/properties/apartments" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/search?type=apartment" className="text-gray-400 hover:text-white transition-colors">
                   Apartments
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/properties/villas" className="text-gray-400 hover:text-white transition-colors">
-                  Villas
-                </a>
+                <Link href="/search?type=condo" className="text-gray-400 hover:text-white transition-colors">
+                  Condos
+                </Link>
               </li>
               <li>
-                <a href="/properties/land" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/search?type=land" className="text-gray-400 hover:text-white transition-colors">
                   Land
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/properties/commercial" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/search?type=commercial" className="text-gray-400 hover:text-white transition-colors">
                   Commercial
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
