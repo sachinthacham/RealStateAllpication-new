@@ -5,6 +5,14 @@ import { AuthLayout } from "@/components/features/auth/components/AuthLayout";
 import { useAuthStore } from "@/stores/auth.store";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { AuthUser } from "@/components/features/auth/types/user";
+
+const getDefaultRedirect = (user: AuthUser | null) => {
+  if (!user) return "/login";
+  if (user.role === "admin") return "/admin/listings";
+  if (user.role === "agent") return "/agent/leads";
+  return "/user/main";
+};
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -12,12 +20,13 @@ export default function RegisterPage() {
   const { register, isLoading } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
 
-  const redirect = searchParams.get("redirect") || "/dashboard";
+  const explicitRedirect = searchParams.get("redirect");
 
   const handleRegister = async (data: any) => {
     try {
       setError(null);
-      await register(data);
+      const user = await register(data);
+      const redirect = explicitRedirect || getDefaultRedirect(user);
       router.push(redirect);
     } catch (err: any) {
       setError(err.message || "Registration failed");
@@ -31,7 +40,7 @@ export default function RegisterPage() {
       showSocialAuth={false}
       footerText="Already have an account?"
       footerLinkText="Sign in"
-      footerLinkHref={`/login?redirect=${redirect}`}
+      footerLinkHref={`/login${explicitRedirect ? `?redirect=${encodeURIComponent(explicitRedirect)}` : ""}`}
       error={error}
     >
       <AuthForm

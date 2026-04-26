@@ -5,6 +5,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { AuthForm } from "@/components/features/auth/components/AuthForm";
 import { AuthLayout } from "@/components/features/auth/components/AuthLayout";
 import { useAuthStore } from "@/stores/auth.store";
+import { AuthUser } from "@/components/features/auth/types/user";
+
+const getDefaultRedirect = (user: AuthUser | null) => {
+  if (!user) return "/";
+  if (user.role === "admin") return "/admin/listings";
+  if (user.role === "agent") return "/agent/leads";
+  return "/user/main";
+};
 
 // 1. Separate component to handle searchParams logic safely
 function LoginContent() {
@@ -15,15 +23,16 @@ function LoginContent() {
 
   // 2. Get redirect path, default to '/' (Home) or '/dashboard'
   const redirectParam = searchParams.get("redirect");
-  const redirect = redirectParam ? decodeURIComponent(redirectParam) : "/";
+  const explicitRedirect = redirectParam ? decodeURIComponent(redirectParam) : null;
 
   const handleLogin = async (data: any) => {
     try {
       setError(null);
       
       // 3. Wait for login to complete (Token saved, state updated)
-      await login(data);
-      
+      const user = await login(data);
+      const redirect = explicitRedirect || getDefaultRedirect(user);
+
       console.log("Login successful. Redirecting to:", redirect);
 
       // 4. Use router.push with a tiny delay
@@ -45,7 +54,7 @@ function LoginContent() {
       showSocialAuth={true}
       footerText="Don't have an account?"
       footerLinkText="Sign up"
-      footerLinkHref={`/register?redirect=${encodeURIComponent(redirect)}`}
+      footerLinkHref={`/register${explicitRedirect ? `?redirect=${encodeURIComponent(explicitRedirect)}` : ""}`}
       error={error}
     >
       <AuthForm type="login" onSubmit={handleLogin} isLoading={isLoading} />
