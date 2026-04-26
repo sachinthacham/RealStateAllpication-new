@@ -9,7 +9,7 @@ import Testimonials from '@/components/features/home/components/Testimonials';
 
 const HomePage = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* 1. Hero Section (Includes Search Bar) */}
       <HeroSection />
 
