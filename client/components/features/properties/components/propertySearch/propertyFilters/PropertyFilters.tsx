@@ -41,12 +41,12 @@ export default function PropertyFilters() {
 
   const clearFilters = () => {
     setFilters({ city: "", status: "all", type: "all", minPrice: "", maxPrice: "", bedrooms: "" });
-    router.push("/properties");
+    router.push("/search");
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border space-y-6">
-      <h3 className="font-bold text-lg">Filter Properties</h3>
+    <div className="surface-card subtle-ring p-6 space-y-6">
+      <h3 className="font-semibold text-lg text-slate-900">Filter Properties</h3>
 
       {/* Location */}
       <div className="space-y-2">
@@ -81,7 +81,8 @@ export default function PropertyFilters() {
             <SelectItem value="house">House</SelectItem>
             <SelectItem value="apartment">Apartment</SelectItem>
             <SelectItem value="land">Land</SelectItem>
-            <SelectItem value="villa">Villa</SelectItem>
+            <SelectItem value="condo">Condo</SelectItem>
+            <SelectItem value="commercial">Commercial</SelectItem>
           </SelectContent>
         </Select>
       </div>
