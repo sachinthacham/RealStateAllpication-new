@@ -45,7 +45,10 @@ const apiClient: AxiosInstance = axios.create({
 // 4. Request Interceptor (Attaches Token)
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const token =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('accessToken') || localStorage.getItem('token')
+        : null;
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -71,10 +74,10 @@ apiClient.interceptors.response.use(
     }
 
     // B. Handle 401 Unauthorized (Refresh Logic)
-    if (error.response.status === 401 && !originalRequest._retry) {
+      if (error.response.status === 401 && !originalRequest._retry) {
       
       // Avoid infinite loop if the refresh endpoint itself fails
-      if (originalRequest.url?.includes('/refresh')) {
+      if (originalRequest.url?.includes('/refresh-token')) {
         return Promise.reject(error);
       }
 
@@ -99,27 +102,29 @@ apiClient.interceptors.response.use(
         
         // Option A: If using LocalStorage for refresh token
         const refreshToken = localStorage.getItem('refreshToken');
-        const { data } = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
+        const { data } = await axios.post(`${BASE_URL}/auth/refresh-token`, { refreshToken });
 
         // Option B: If using HttpOnly cookies, just call the endpoint:
         // const { data } = await axios.post(`${BASE_URL}/auth/refresh`, {}, { withCredentials: true });
 
         // Save new token
-        localStorage.setItem('token', data.token);
+        const newAccessToken = data?.data?.accessToken;
+        localStorage.setItem('accessToken', newAccessToken);
         // If your backend rotates refresh tokens, save that too:
-        if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+        if (data?.data?.refreshToken) localStorage.setItem('refreshToken', data.data.refreshToken);
 
         // Process queue
-        processQueue(null, data.token);
+        processQueue(null, newAccessToken);
 
         // Retry original request
-        originalRequest.headers.Authorization = `Bearer ${data.token}`;
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return apiClient(originalRequest);
 
       } catch (refreshError) {
         processQueue(refreshError, null);
         // Logout if refresh fails
         localStorage.removeItem('token');
+        localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         if (typeof window !== 'undefined') {
              window.location.href = '/login'; 
@@ -131,7 +136,12 @@ apiClient.interceptors.response.use(
     }
 
     // C. Return clean error message
-    const message = error.response.data?.message || error.message || "An unexpected error occurred";
+    const backendError = (error.response.data as any)?.error;
+    const message =
+      backendError ||
+      error.response.data?.message ||
+      error.message ||
+      "An unexpected error occurred";
     return Promise.reject(new Error(message));
   }
 );
