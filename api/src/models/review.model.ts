@@ -1,5 +1,6 @@
 import mongoose, { Schema, Model } from 'mongoose';
 import { IReview } from '../interfaces/IReview'; // Import the interface above
+import { Types } from 'mongoose';
 
 // 1. Define the Schema
 const ReviewSchema: Schema = new Schema(
@@ -41,7 +42,7 @@ ReviewSchema.index({ property: 1, user: 1 }, { unique: true });
 ReviewSchema.statics.getAverageRating = async function (propertyId: string) {
   const obj = await this.aggregate([
     {
-      $match: { property: propertyId },
+      $match: { property: new Types.ObjectId(propertyId) },
     },
     {
       $group: {
