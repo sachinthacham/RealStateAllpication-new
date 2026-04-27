@@ -46,3 +46,51 @@ export const getPropertyReviews = async (req: Request, res: Response, next: Next
     next(error);
   }
 };
+
+export const updateReview = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const review = await reviewService.updateReview(
+      req.params.reviewId,
+      req.user._id || req.user.id,
+      req.user.role,
+      req.body
+    );
+
+    res.status(200).json({
+      success: true,
+      data: review,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteReview = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    await reviewService.deleteReview(
+      req.params.reviewId,
+      req.user._id || req.user.id,
+      req.user.role
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Review deleted successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const reportReview = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const result = await reviewService.reportReview(req.params.reviewId);
+    res.status(200).json({
+      success: true,
+      message: 'Review reported for moderation',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
