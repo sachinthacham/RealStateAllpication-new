@@ -21,6 +21,7 @@ getProperties = async (query: any) => {
   const {
     page = 1,
     limit = 10,
+    agent,
     type,
     status,
     minPrice,
@@ -34,10 +35,15 @@ getProperties = async (query: any) => {
   } = query;
 
   const filter: any = {};
+  filter.moderationStatus = { $ne: 'rejected' };
 
   // FIX: Ignore 'all' so we return EVERYTHING if 'all' is selected
   if (type && type !== 'all') {
     filter.type = type;
+  }
+
+  if (agent && Types.ObjectId.isValid(agent as string)) {
+    filter.agent = new Types.ObjectId(agent as string);
   }
   
   if (status && status !== 'all') {
@@ -116,6 +122,9 @@ getProperties = async (query: any) => {
       .populate('createdBy', 'name email');
 
     if (!property) throw new AppError('Property not found', 404);
+    if ((property as any).moderationStatus === 'rejected') {
+      throw new AppError('Property is not publicly available', 404);
+    }
     return property;
   }
 
@@ -132,11 +141,12 @@ getProperties = async (query: any) => {
 
   /** Update property with ownership check */
   async updateProperty(id: string, data: any, userId: string, role: string) {
+    if (!Types.ObjectId.isValid(id)) throw new AppError('Invalid Property ID', 400);
     const property = await Property.findById(id);
     if (!property) throw new AppError('Property not found', 404);
 
     // Standard check: only the owner (agent) or an admin can edit
-    if (property.agent !== userId && role !== 'admin') {
+    if (String((property as any).agent) !== userId && role !== 'admin') {
       throw new AppError('You do not have permission to update this property', 403);
     }
 
@@ -150,10 +160,11 @@ getProperties = async (query: any) => {
    * Delete property with ownership check
    */
   async deleteProperty(id: string, userId: string, role: string) {
+    if (!Types.ObjectId.isValid(id)) throw new AppError('Invalid Property ID', 400);
     const property = await Property.findById(id);
     if (!property) throw new AppError('Property not found', 404);
 
-    if (property.agent !== userId && role !== 'admin') {
+    if (String((property as any).agent) !== userId && role !== 'admin') {
       throw new AppError('You do not have permission to delete this property', 403);
     }
 
