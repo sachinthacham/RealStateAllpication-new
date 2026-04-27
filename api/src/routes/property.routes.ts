@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { PropertyController } from "../controllers/property.controller";
-import { authenticate } from "../middlewares/auth.middleware";
-import { validate } from "../middlewares/validate";
+import { authenticate, authorize } from "../middlewares/auth.middleware";
+import { validate, validateQuery } from "../middlewares/validate";
 import {
   createPropertyValidation,
   updatePropertyValidation,
@@ -23,13 +23,13 @@ router.get('/nearby', propertyController.getNearbyProperties);
 
 router.get(
   "/",
-  validate(propertyQueryValidation),
+  validateQuery(propertyQueryValidation),
   propertyController.getProperties
 );
 
 router.get(
   "/agent/:agentId",
-  validate(propertyQueryValidation),
+  validateQuery(propertyQueryValidation),
   propertyController.getPropertiesByAgent
 );
 
@@ -45,6 +45,7 @@ router.get(
 router.post(
   '/', 
   authenticate,          // 1. Check if user is logged in
+  authorize('agent', 'admin'),
   upload.array('images'), // 2.  CRITICAL: Parse the Multipart Data (Files + Body)
   //validate(createPropertyValidation), // 3. (Optional) Validate body AFTER Multer parses it
   propertyController.createProperty // 4. Finally, run the controller
@@ -53,6 +54,7 @@ router.post(
 router.put(
   "/:id",
   authenticate,
+  authorize('agent', 'admin'),
   validate(updatePropertyValidation),
   propertyController.updateProperty
 );
@@ -60,6 +62,7 @@ router.put(
 router.delete(
   "/:id",
   authenticate,
+  authorize('agent', 'admin'),
   propertyController.deleteProperty
 );
 

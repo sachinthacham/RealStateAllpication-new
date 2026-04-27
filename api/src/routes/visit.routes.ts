@@ -1,19 +1,20 @@
-import express from "express";
-import {
-  createVisit,
-  getMyVisits,
-  confirmVisit,
-  cancelVisit,
-  completeVisit,
-} from "../controllers/visit.controller";
-import { authenticate } from "../middlewares/authTokenOnly.middleware";
+import { Router } from 'express';
+import { VisitController } from '../controllers/visit.controller';
+import { authenticate, authorize } from '../middlewares/auth.middleware';
+import { validate } from '../middlewares/validate';
+import { createVisitValidation, updateVisitStatusValidation } from '../validations/visit.validation';
 
-const router = express.Router();
+const router = Router();
+const visitController = new VisitController();
 
-router.post("/", authenticate, createVisit); // buyer requests a visit
-router.get("/", authenticate, getMyVisits); // buyer views all visit requests
-router.patch("/:id/confirm", authenticate, confirmVisit); // admin/seller confirms
-router.patch("/:id/cancel", authenticate, cancelVisit); // buyer cancels
-router.patch("/:id/complete", authenticate, completeVisit); // mark as completed
+router.post('/', authenticate, validate(createVisitValidation), visitController.createVisit);
+router.get('/me', authenticate, visitController.getMyVisits);
+router.get('/assigned', authenticate, authorize('agent', 'admin'), visitController.getAssignedVisits);
+router.patch(
+  '/:id/status',
+  authenticate,
+  validate(updateVisitStatusValidation),
+  visitController.updateVisitStatus
+);
 
 export default router;
