@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Eye, MessageSquare, Edit, Trash2, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Eye, MessageSquare, Edit, Trash2, Clock, CheckCircle } from 'lucide-react';
 import { propertyApi } from '@/lib/api/properties'; // Use your existing API service
 import { Property } from '@/components/features/properties/types/property';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ export default function MyAdsPage() {
   const [ads, setAds] = useState<Property[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [filter, setFilter] = useState('All');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const { user } = useAuthStore();
 
@@ -35,7 +36,21 @@ export default function MyAdsPage() {
       }
     };
     fetchMyAds();
-  }, []);
+  }, [user]);
+
+  const handleDelete = async (propertyId: string) => {
+    const confirmed = window.confirm('Delete this listing? This action cannot be undone.');
+    if (!confirmed) return;
+    try {
+      setDeletingId(propertyId);
+      await propertyApi.delete(propertyId);
+      setAds((prev) => prev.filter((item) => item._id !== propertyId));
+    } catch (error) {
+      console.error("Failed to delete property", error);
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   // Helper to format date relative to now (e.g., "2 days ago")
   const formatDate = (dateString: string) => {
@@ -137,10 +152,15 @@ export default function MyAdsPage() {
 
                 {/* Actions */}
                 <div className="flex gap-2 self-end sm:self-start">
-                  <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors" title="Edit">
+                    <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors" title="Edit">
                     <Edit className="w-4 h-4" />
                   </button>
-                  <button className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors" title="Delete">
+                    <button
+                      disabled={deletingId === ad._id}
+                      onClick={() => handleDelete(ad._id)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors disabled:opacity-50"
+                      title="Delete"
+                    >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
